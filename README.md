@@ -12,6 +12,6 @@ Includes:
 
 5. Vernom Cipher
 
-6.DES Encryption 
+6. DES Encryption 
 
 ...Yet to come...
