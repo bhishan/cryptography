@@ -7,7 +7,6 @@ def bit_rearrangement(table, lookup_string):
             rearranged_string += lookup_string[lookup_index - 1]
     return rearranged_string
 
-
 def shift_left(initial_key, number):
     temp = initial_key[number:]
     to_append = initial_key[:number]
@@ -16,39 +15,26 @@ def shift_left(initial_key, number):
 def message_encoding(ln, rn, key):
     temp_ln = rn[:]
     e_rn = bit_rearrangement(e_bit_selection_table, rn)
-    #print "e(rn)", e_rn
     f_value = int(e_rn, 2) ^ int(key, 2)
     f_value = format(f_value, '048b')
-    #print "kn + e(rn)", f_value
     f = six_to_four_bits(f_value)
     final_f = bit_rearrangement(p, f)
-    #print "final f", final_f
     rn = int(ln, 2) ^ int(final_f, 2)
     rn = format(rn, '032b')
-    return [temp_ln, rn]
-    
-    
+    return [temp_ln, rn]    
 
 def six_to_four_bits(msg):
     final_msg = ''
     s_count = 0
     for i in range(0, len(msg), 6):
         current_chunk = msg[i:i+6]  
-        #print current_chunk
         row_str = current_chunk[0] + current_chunk[-1]
-        #print "row chunk ", row_str
         row = int(row_str, 2)
-        #print row
         col_str = current_chunk[1:5]
-        #print "col chunk ", col_str
         col = int(col_str, 2)
-        #print col
         table = s_table[s_count]
-        #print table
         num = table[row][col]
-        #print "num", num
         final_msg += format(num, '04b')
-        #print final_msg
         s_count += 1
     return final_msg
 
@@ -108,58 +94,40 @@ bin_message = append_z + bin_message
 
 ip_message = ''
 
-
-
 message_l0, message_r0 = ip_message[:len(ip_message)/2], ip_message[len(ip_message)/2:]
-#print bin_key
+
 append_bin = ""
 if(len(bin_key) < 64):
     for i in range(64 - len(bin_key)):
         append_bin += "0"
 bin_key = append_bin + bin_key
-#print len(bin_key)
-
 k_plus = bit_rearrangement(pc1, bin_key)
 
-#print k_plus
-
 left_key, right_key = k_plus[:len(k_plus)/2], k_plus[len(k_plus)/2:]
-#print left_key
-#print right_key
 
 for i in range(16):
     left_key = shift_left(left_key, left_shifts[i])
     right_key = shift_left(right_key, left_shifts[i])
     C.append(left_key)
     D.append(right_key)
-    #print "l", i+1, left_key
-    #print "r", i+1, right_key
+
 
 for i in range(16):
     temp_key = C[i] + D[i]
     final_key = bit_rearrangement(pc2, temp_key)
     K.append(final_key)
-    #print final_key, len(final_key)
 
 ip_message = bit_rearrangement(ip_table, bin_message)
 
-#print "message", bin_message, type(bin_message)
-#print "ip message ", ip_message, type(bin_message)
-
 ln, rn = ip_message[:len(ip_message)/2] , ip_message[len(ip_message)/2:]
-
-#print "left ip", ln
-
-#print "right ip", rn  
+  
 for i in range(16):
     ln, rn = message_encoding(ln, rn, K[i])
-    #print "left ", i, ln
-    #print "right ", i, rn
+
 rnln = rn+ln 
 
 encrypted_msg = bit_rearrangement(ip_inverse, rnln)
 
-#print encrypted_msg
 encrypted_bin_to_int = int(encrypted_msg, 2)
 encrypted_msg_hex = format(encrypted_bin_to_int, '016x')
 print "Encrypted Hexadecimal format: ", encrypted_msg_hex
